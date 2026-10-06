@@ -1,0 +1,170 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no">
+<title>Just Cute Game 2.0</title>
+<style>
+@font-face{font-family:pixel;src:local("Courier New")}
+*{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+html,body{margin:0;width:100%;height:100%;overflow:hidden;background:#181329;color:#fff;font-family:pixel,monospace}
+button{font:inherit}
+.screen{display:none;position:absolute;inset:0}.screen.show{display:block}
+#start{background:#ffd4e8;color:#572c48;text-align:center}
+.start-inner{height:100%;display:flex;align-items:center;justify-content:center;padding:22px}
+.start-card{max-width:620px}
+.logo{font-weight:900;font-size:clamp(32px,9vw,64px);line-height:.95;color:#ff4f9a;text-shadow:5px 5px #fff;margin:20px 0}
+.px{font-size:62px;letter-spacing:10px;animation:bounce 1s steps(2) infinite}
+@keyframes bounce{50%{transform:translateY(-8px)}}
+.start-card p{font-family:system-ui,sans-serif;font-size:17px;line-height:1.45}
+.btn{background:#ff68a8;color:#fff;border:4px solid #582d48;padding:14px 18px;box-shadow:6px 6px #582d48;font-weight:900;margin:10px 5px;cursor:pointer}
+.btn:active{transform:translate(4px,4px);box-shadow:2px 2px #582d48}
+#game{background:#6ec7e9}
+.hud{height:58px;background:#261d38;border-bottom:4px solid #120d1c;display:flex;align-items:center;justify-content:space-between;padding:0 10px;font-size:12px;position:relative;z-index:20}
+.hud span{background:#fff0f7;color:#5b2f4b;border:3px solid #5b2f4b;padding:7px 9px}
+#world{position:absolute;top:58px;bottom:0;left:0;right:0;overflow:hidden;
+background:
+linear-gradient(#70c7e9 0 35%,#a8dc7e 35% 100%)}
+.cloud{position:absolute;font-size:44px;opacity:.8}
+.water{position:absolute;background:#52acd2;border:4px solid #398eae}
+.land{position:absolute;background:#a6dc7b;border:5px solid #548f50;box-shadow:inset 0 -16px rgba(75,142,67,.13)}
+.tree{position:absolute;font-size:34px;z-index:3}
+.road{position:absolute;background:#e9c995;border-top:4px solid #bd925c;border-bottom:4px solid #bd925c;z-index:1}
+.place{position:absolute;z-index:8;text-align:center;transform:translate(-50%,-50%)}
+.place button{border:0;background:transparent;font-size:42px;cursor:pointer;filter:drop-shadow(3px 4px #60405a)}
+.tag{display:block;margin-top:2px;background:#fff1f7;color:#5b304b;border:3px solid #5b304b;padding:6px 5px;font-size:10px;white-space:nowrap;box-shadow:3px 3px #5b304b}
+#misra{position:absolute;z-index:12;font-size:45px;left:50%;top:68%;transform:translate(-50%,-50%);filter:drop-shadow(3px 5px #573a54);transition:.1s linear}
+#hint{position:absolute;right:9px;bottom:12px;z-index:15;width:170px;background:#fff1f7;color:#5b304b;border:3px solid #5b304b;padding:8px;font-size:10px;line-height:1.5}
+#pad{position:absolute;z-index:30;left:10px;bottom:10px;display:grid;grid-template-columns:52px 52px 52px;gap:5px}
+#pad button{width:52px;height:48px;background:#fff1f7;color:#5b304b;border:4px solid #5b304b;box-shadow:4px 4px #5b304b;font-size:19px}
+.blank{visibility:hidden}
+.modal{position:absolute;inset:0;z-index:100;background:rgba(25,16,37,.74);display:none;align-items:center;justify-content:center;padding:18px}
+.modal.show{display:flex}
+.dialog{width:min(94%,500px);background:#fff1f7;color:#4f2943;border:5px solid #4f2943;box-shadow:8px 8px #100b18;padding:22px;text-align:center}
+.dialog .emoji{font-size:58px}
+.dialog h2{font-size:20px;color:#e34f93}
+.dialog p{font-family:system-ui,sans-serif;font-size:17px;line-height:1.55}
+#end{background:#20162f;overflow:auto}
+.end{min-height:100%;display:flex;align-items:center;justify-content:center;padding:20px}
+.end-card{width:min(92%,650px);background:#fff1f7;color:#4f2943;border:5px solid #4f2943;box-shadow:9px 9px #0d0913;padding:25px;text-align:center}
+.end-card h1{color:#e34f93;font-size:25px;line-height:1.45}
+.end-card p{font-family:system-ui,sans-serif;font-size:18px;line-height:1.55}
+</style>
+</head>
+<body>
+
+<section id="start" class="screen show">
+ <div class="start-inner">
+  <div class="start-card">
+   <div class="px">♥ ♡ ♥</div>
+   <div class="logo">JUST CUTE<br>GAME</div>
+   <p>A tiny pixel adventure made by <b>Nikita</b> for <b>Misra</b>.</p>
+   <p>Walk through a little world, discover five memories, and unlock the ending.</p>
+   <button class="btn" id="startBtn">START OUR STORY</button>
+  </div>
+ </div>
+</section>
+
+<section id="game" class="screen">
+ <div class="hud">
+  <span>♥ MISRA</span>
+  <span>MEMORIES: <b id="score">0</b>/5</span>
+ </div>
+ <div id="world">
+  <div class="cloud" style="left:8%;top:7%">☁</div>
+  <div class="cloud" style="left:72%;top:10%">☁</div>
+  <div class="water" style="left:0;top:23%;width:100%;height:10%"></div>
+  <div class="land" style="left:-12%;top:27%;width:58%;height:48%;border-radius:45%"></div>
+  <div class="land" style="right:-10%;top:28%;width:58%;height:48%;border-radius:48%"></div>
+  <div class="land" style="left:25%;bottom:-20%;width:55%;height:46%;border-radius:50%"></div>
+
+  <div class="tree" style="left:7%;top:40%">🌳</div><div class="tree" style="left:35%;top:40%">🌳</div>
+  <div class="tree" style="right:7%;top:42%">🌳</div><div class="tree" style="right:31%;bottom:20%">🌳</div>
+  <div class="tree" style="left:9%;bottom:23%">🌲</div>
+
+  <div class="road" style="left:20%;top:58%;width:300px;height:14px;transform:rotate(-20deg)"></div>
+  <div class="road" style="left:47%;top:55%;width:190px;height:14px;transform:rotate(58deg)"></div>
+
+  <div class="place" style="left:20%;top:34%"><button data-memory="hello">💬</button><span class="tag">HELLOTALK</span></div>
+  <div class="place" style="right:18%;top:35%"><button data-memory="turkey">🇹🇷</button><span class="tag">MISRA'S STORY</span></div>
+  <div class="place" style="left:45%;top:52%"><button data-memory="belarus">🇧🇾</button><span class="tag">NIKITA'S STORY</span></div>
+  <div class="place" style="right:19%;top:61%"><button data-memory="portugal">🇵🇹</button><span class="tag">PORTUGAL • NOW</span></div>
+  <div class="place" style="left:18%;bottom:17%"><button data-memory="kids">🦈🐸</button><span class="tag">OUR KIDS</span></div>
+
+  <div id="misra">👧🏻</div>
+  <div id="hint">Explore the map.<br>Find all five memories!</div>
+  <div id="pad">
+   <button class="blank"></button><button data-move="up">▲</button><button class="blank"></button>
+   <button data-move="left">◀</button><button data-move="down">▼</button><button data-move="right">▶</button>
+  </div>
+ </div>
+</section>
+
+<div id="modal" class="modal">
+ <div class="dialog">
+  <div id="me" class="emoji">♥</div>
+  <h2 id="mh"></h2>
+  <p id="mp"></p>
+  <button class="btn" id="continue">KEEP EXPLORING</button>
+ </div>
+</div>
+
+<section id="end" class="screen">
+ <div class="end">
+  <div class="end-card">
+   <div style="font-size:58px">🦈 ♥ 🐸</div>
+   <h1>YOU FOUND THE WHOLE STORY.</h1>
+   <p>Misra, this tiny pixel world is for you.</p>
+   <p>It started with HelloTalk. Then came the everyday conversations, missing each other, the cute names, and our two very important Widgetable kids: Shark and Frog.</p>
+   <p>Turkey is part of your story. Belarus is part of Nikita's story. Portugal is where you live now.</p>
+   <p><b>I love your looks, your character, and the way you call me “Babe”. ♥</b></p>
+   <p>So I made this little world just to tell you that I'm really happy you are in my story.</p>
+   <p>And yes... Nikita definitely turned his feelings into a video game. 😂</p>
+   <button class="btn" onclick="location.reload()">PLAY AGAIN</button>
+  </div>
+ </div>
+</section>
+
+<script>
+const memories={
+ hello:["💬","WHERE IT STARTED","Before all of this, there was HelloTalk. One conversation, two people, and a story that neither of us knew was about to begin."],
+ turkey:["🇹🇷","MISRA'S STORY","Turkey is part of Misra's story. It belongs on this map because this game follows the places and moments that make her story special."],
+ belarus:["🇧🇾","NIKITA'S STORY","Belarus is Nikita's side of the map. His home, his world, and the place from which this little game was made."],
+ portugal:["🇵🇹","WHERE YOU LIVE NOW","Portugal is where Misra lives now. So this is not just a random country on the map. It is part of her real life today."],
+ kids:["🦈🐸","THE TINY FAMILY","Shark and Frog! Your Widgetable kids. They may be tiny, but apparently they are important enough to get their own location in a video game."]
+};
+const found=new Set();
+let px=50,py=68;
+const $=id=>document.getElementById(id);
+function show(id){document.querySelectorAll(".screen").forEach(s=>s.classList.remove("show"));$(id).classList.add("show")}
+$("startBtn").onclick=()=>show("game");
+
+document.querySelectorAll("[data-memory]").forEach(b=>b.onclick=()=>{
+ const k=b.dataset.memory;
+ found.add(k);$("score").textContent=found.size;
+ $("me").textContent=memories[k][0];$("mh").textContent=memories[k][1];$("mp").textContent=memories[k][2];
+ $("modal").classList.add("show");
+});
+$("continue").onclick=()=>{
+ $("modal").classList.remove("show");
+ if(found.size===5)setTimeout(()=>show("end"),300);
+};
+
+function move(dx,dy){
+ px=Math.max(8,Math.min(92,px+dx*4));
+ py=Math.max(17,Math.min(84,py+dy*4));
+ $("misra").style.left=px+"%";$("misra").style.top=py+"%";
+}
+document.querySelectorAll("[data-move]").forEach(b=>b.onclick=()=>{
+ const d=b.dataset.move;
+ if(d==="up")move(0,-1);if(d==="down")move(0,1);if(d==="left")move(-1,0);if(d==="right")move(1,0);
+});
+addEventListener("keydown",e=>{
+ if(e.key==="ArrowUp")move(0,-1);
+ if(e.key==="ArrowDown")move(0,1);
+ if(e.key==="ArrowLeft")move(-1,0);
+ if(e.key==="ArrowRight")move(1,0);
+});
+</script>
+</body>
+</html>
